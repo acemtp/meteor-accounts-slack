@@ -8,7 +8,6 @@ Package Dependencies
 
 * accounts-base
 * accounts-oauth
-* linkedin
 
 Install
 -----------
