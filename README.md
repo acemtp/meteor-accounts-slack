@@ -13,7 +13,7 @@ Package Dependencies
 Install
 -----------
 ```
-mrt add accounts-linkedin
+mrt add accounts-slack
 ```
 
 ```mrt``` is a Meteorite command line tool. Visit [Meteorite's page](http://oortcloud.github.com/meteorite/) to learn more.
