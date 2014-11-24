@@ -1,7 +1,6 @@
 Slack = {};
 
 OAuth.registerService('slack', 2, null, function(query) {
-
   var accessToken = getAccessToken(query);
   var identity = getIdentity(accessToken);
 
@@ -10,13 +9,13 @@ OAuth.registerService('slack', 2, null, function(query) {
       id: identity.user_id,
       accessToken: accessToken
     },
-    options: {profile: {
+    options: { profile: {
       name: identity.user,
       url: identity.url,
       team: identity.team,
       user_id: identity.user_id,
       team_id: identity.team_id
-    }}
+    } }
   };
 });
 
