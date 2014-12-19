@@ -1,6 +1,6 @@
 Package.describe({
   summary: "Login service for Slack accounts",
-  version: "1.0.2",
+  version: "1.0.3",
   git: "https://github.com/efounders/meteor-accounts-slack.git",
   name: "acemtp:accounts-slack"
 });

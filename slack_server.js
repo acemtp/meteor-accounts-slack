@@ -27,12 +27,19 @@ var getAccessToken = function (query) {
   var response;
   try {
     response = HTTP.post(
-      "https://slack.com/api/oauth.access", {headers: {Accept: 'application/json'}, params: {
-        code: query.code,
-        client_id: config.clientId,
-        client_secret: OAuth.openSecret(config.secret),
-        redirect_uri: Meteor.absoluteUrl("_oauth/slack?close")
-      }});
+      "https://slack.com/api/oauth.access", {
+        headers: {
+          Accept: 'application/json'
+        },
+        params: {
+          code: query.code,
+          client_id: config.clientId,
+          client_secret: OAuth.openSecret(config.secret),
+  //        redirect_uri: Meteor.absoluteUrl("_oauth/slack?close")
+          redirect_uri: OAuth._redirectUri('slack', config),
+          state: query.state
+        }
+      });
   } catch (err) {
     throw _.extend(new Error("Failed to complete OAuth handshake with Slack. " + err.message),
                    {response: err.response});
