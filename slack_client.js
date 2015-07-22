@@ -26,7 +26,7 @@ Slack.requestCredential = function (options, credentialRequestCompleteCallback) 
   var credentialToken = Random.id();
 
   var scope = (options && options.requestPermissions) || [];
-  var flatScope = _.map(scope, encodeURIComponent).join(',');
+  var flatScope = _.map(scope, encodeURIComponent).join(',') || 'identify';
 
   var loginStyle = OAuth._loginStyle('slack', config, options);
 
