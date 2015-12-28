@@ -1,25 +1,34 @@
 Slack = {};
 
 OAuth.registerService('slack', 2, null, function(query) {
-  var accessToken = getAccessToken(query);
-  var identity = getIdentity(accessToken);
+  var tokens = getTokens(query);
+  var identity = getIdentity(tokens.access_token);
+
+  // console.log('tokens', tokens);
+  // console.log('identity', identity);
 
   return {
     serviceData: {
       id: identity.user_id,
-      accessToken: accessToken
+      accessToken: tokens.access_token
     },
-    options: { profile: {
-      name: identity.user,
-      url: identity.url,
-      team: identity.team,
-      user_id: identity.user_id,
-      team_id: identity.team_id
-    } }
+    options: {
+      profile: {
+        name: identity.user,
+        url: identity.url,
+        team: identity.team,
+        user_id: identity.user_id,
+        team_id: identity.team_id
+      },
+      slack: {
+        tokens: tokens,
+        identity: identity,
+      }
+    }
   };
 });
 
-var getAccessToken = function (query) {
+var getTokens = function (query) {
   var config = ServiceConfiguration.configurations.findOne({service: 'slack'});
   if (!config)
     throw new ServiceConfiguration.ConfigError();
@@ -48,7 +57,7 @@ var getAccessToken = function (query) {
   if (!response.data.ok) { // if the http response was a json object with an error attribute
     throw new Error("Failed to complete OAuth handshake with Slack. " + response.data.error);
   } else {
-    return response.data.access_token;
+    return response.data;
   }
 };
 
