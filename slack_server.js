@@ -4,14 +4,12 @@ OAuth.registerService('slack', 2, null, function(query) {
   var tokens = getTokens(query);
   var identity = getIdentity(tokens.access_token);
 
-  // console.log('tokens', tokens);
-  // console.log('identity', identity);
+  var botAccessToken = getBotAccessToken(tokens);
 
-  return {
+  var ret = {
     serviceData: {
       id: identity.user_id,
-      accessToken: tokens.access_token,
-      botAccessToken: tokens.bot_access_token
+      accessToken: tokens.access_token
     },
     options: {
       profile: {
@@ -27,6 +25,12 @@ OAuth.registerService('slack', 2, null, function(query) {
       }
     }
   };
+
+  if (botAccessToken) {
+    ret['serviceData']['botAccessToken'] = botAccessToken;
+  }
+
+  return ret;
 });
 
 var getTokens = function (query) {
@@ -59,6 +63,14 @@ var getTokens = function (query) {
     throw new Error("Failed to complete OAuth handshake with Slack. " + response.data.error);
   } else {
     return response.data;
+  }
+};
+
+var getBotAccessToken = function (data) {
+  if (!data.bot || !data.bot.bot_access_token) {
+    return false;
+  } else {
+    return data.bot.bot_access_token;
   }
 };
 
