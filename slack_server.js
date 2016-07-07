@@ -6,18 +6,24 @@ OAuth.registerService('slack', 2, null, function(query) {
 
   var botAccessToken = getBotAccessToken(tokens);
 
+  var user_id = identity.user_id || tokens.user.id;
+  var team_id = identity.team_id || tokens.team.id;
+
+  var user_name = identity.user || tokens.user.name;
+  var team_name = identity.team || tokens.team.name;
+
   var ret = {
     serviceData: {
-      id: identity.user_id,
+      id: user_id,
       accessToken: tokens.access_token
     },
     options: {
       profile: {
-        name: identity.user,
+        name: user_name,
         url: identity.url,
-        team: identity.team,
-        user_id: identity.user_id,
-        team_id: identity.team_id
+        team: team_name,
+        user_id: user_id,
+        team_id: team_id
       },
       slack: {
         tokens: tokens,
