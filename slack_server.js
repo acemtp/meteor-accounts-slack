@@ -68,7 +68,24 @@ var getIdentity = function (accessToken) {
       "https://slack.com/api/auth.test",
       {params: {token: accessToken}});
 
-    return response.data.ok && response.data;
+    if (response.data && response.data.ok)
+      return response.data;
+
+    response = HTTP.get(
+      "https://slack.com/api/users.identity",
+      {params: {token: accessToken}});
+
+    if (response.data && response.data.ok)
+      // Simulate the response that auth.test would have returned
+      return _.extend(response.data.user, {
+        user: response.data.user.name,
+        user_id: response.data.user.id,
+        team_id: response.data.team.id,
+        team: response.data.team.name,
+        url: response.data.url
+      });
+    else
+      throw new Error("Could not retrieve user identity");
   } catch (err) {
     throw _.extend(new Error("Failed to fetch identity from Slack. " + err.message),
                    {response: err.response});
