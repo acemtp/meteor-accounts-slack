@@ -12,6 +12,7 @@ OAuth.registerService('slack', 2, null, function(query) {
     options: {
       profile: {
         name: identity.user,
+        url: identity.url,
         team: identity.team,
         user_id: identity.user_id,
         team_id: identity.team_id
@@ -56,6 +57,15 @@ var getTokens = function (query) {
   }
 };
 
+var replaceObjectKeyName = function (obj) {
+  Object.keys(obj).forEach(function(v) {
+    if (v.includes('https://slack.com/')) {
+      obj[v.replace("https://slack.com/", "")] = obj[v];
+      delete obj[v];
+    }
+  });
+}
+
 var getIdentity = function (accessToken) {
   try {
     var response = HTTP.get(
@@ -68,15 +78,19 @@ var getIdentity = function (accessToken) {
     response = HTTP.get(
       "https://slack.com/api/openid.connect.userInfo",
       {params: {token: accessToken}});
+    if (response.data && response.data.ok) {
+      // Replace response object key names including 'https://slack.com/' string
+      replaceObjectKeyName(response.data);
 
-    if (response.data && response.data.ok)
       // Simulate the response that auth.test would have returned
-      return _.extend(response.data.user, {
+      return _.extend(response.data, {
         user: response.data.name,
-        user_id: response.data["https://slack.com/user_id"],
-        team_id: response.data["https://slack.com/team_id"],
-        team: response.data["https://slack.com/team_name"]
+        user_id: response.data.user_id,
+        team_id: response.data.team_id,
+        team: response.data.team_name,
+        url: `https://${response.data.team_domain}.slack.com/`
       });
+    }
     else
       throw new Error("Could not retrieve user identity");
   } catch (err) {
