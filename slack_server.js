@@ -4,15 +4,10 @@ OAuth.registerService('slack', 2, null, function(query) {
   var tokens = getTokens(query);
   var identity = getIdentity(tokens.access_token);
 
-  // console.log('tokens', tokens);
-  // console.log('identity', identity);
-
   return {
     serviceData: {
       id: identity.user_id,
-      accessToken: tokens.access_token,
-      botAccessToken: tokens.bot?.bot_access_token,
-      botUserId: tokens.bot?.bot_user_id
+      accessToken: tokens.access_token
     },
     options: {
       profile: {
@@ -38,7 +33,7 @@ var getTokens = function (query) {
   var response;
   try {
     response = HTTP.post(
-      "https://slack.com/api/oauth.access", {
+      "https://slack.com/api/openid.connect.token", {
         headers: {
           Accept: 'application/json'
         },
@@ -46,7 +41,6 @@ var getTokens = function (query) {
           code: query.code,
           client_id: config.clientId,
           client_secret: OAuth.openSecret(config.secret),
-  //        redirect_uri: Meteor.absoluteUrl("_oauth/slack?close")
           redirect_uri: OAuth._redirectUri('slack', config),
           state: query.state
         }
@@ -63,6 +57,15 @@ var getTokens = function (query) {
   }
 };
 
+var replaceObjectKeyName = function (obj) {
+  Object.keys(obj).forEach(function(v) {
+    if (v.includes('https://slack.com/')) {
+      obj[v.replace("https://slack.com/", "")] = obj[v];
+      delete obj[v];
+    }
+  });
+}
+
 var getIdentity = function (accessToken) {
   try {
     var response = HTTP.get(
@@ -73,18 +76,22 @@ var getIdentity = function (accessToken) {
       return response.data;
 
     response = HTTP.get(
-      "https://slack.com/api/users.identity",
+      "https://slack.com/api/openid.connect.userInfo",
       {params: {token: accessToken}});
+    
+    if (response.data && response.data.ok) {
+      // Replace response object key names including 'https://slack.com/' string
+      replaceObjectKeyName(response.data);
 
-    if (response.data && response.data.ok)
       // Simulate the response that auth.test would have returned
-      return _.extend(response.data.user, {
-        user: response.data.user.name,
-        user_id: response.data.user.id,
-        team_id: response.data.team.id,
-        team: response.data.team.name,
-        url: response.data.url
+      return _.extend(response.data, {
+        user: response.data.name,
+        user_id: response.data.user_id,
+        team_id: response.data.team_id,
+        team: response.data.team_name,
+        url: `https://${response.data.team_domain}.slack.com/`
       });
+    }
     else
       throw new Error("Could not retrieve user identity");
   } catch (err) {
