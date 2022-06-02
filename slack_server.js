@@ -78,6 +78,7 @@ var getIdentity = function (accessToken) {
     response = HTTP.get(
       "https://slack.com/api/openid.connect.userInfo",
       {params: {token: accessToken}});
+    
     if (response.data && response.data.ok) {
       // Replace response object key names including 'https://slack.com/' string
       replaceObjectKeyName(response.data);
